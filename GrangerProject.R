@@ -475,7 +475,7 @@ for (i in 2:7) {
   colnames(KPSS_df_2)[i] = Econ_Indicators1[i]
 }
 
-#====Throw out all values that don't pass (ADF p < 0.05 & KPSS p > 0.05) from "Intermediate_Table"
+#====Throw out all values that don't pass (ADF p < 0.05 & KPSS p > 0.05) from "Transition_Table"
 # Resulting in "Transformed_Table"
 
 ADF_KPSS_df_2 <- data.frame(COUNTRY = Country_List)
