@@ -22,33 +22,33 @@ Input_Table <- read.csv("world_bank_indicators.csv", header = TRUE, sep = ",")
 Country_List <- unique(Input_Table$COUNTRY)
 Econ_Indicators <- c("GDP_GROWTH", "GNI_CAPITA_PPP", "AG_GDP", "INDUSTRY_GDP", "MANUFACTURING_GDP", "GROSS_CAPITAL")
 
-#===== aggregate indicators from Input_Table
+#===== define aggregate indicators from Input_Table
 
-Q1 <- function(a.1) {
-  quantile(a.1, probs = 0.25)
+Q1 <- function(x) {
+  quantile(x, probs = 0.25)
 }
 
-Q3 <- function(a.1) {
-  quantile(a.1, probs = 0.75)
+Q3 <- function(x) {
+  quantile(x, probs = 0.75)
 }
 
-IQR1 <- function(a.1) {
-  (Q3(a.1) - Q1(a.1))*1.5
+IQR1 <- function(x) {
+  (Q3(x) - Q1(x))*1.5
 }
 
-Upper_Fence <- function(a.1) {
-  if (Q3(a.1) + IQR1(a.1) > max(a.1)) {
-    max(a.1)
+UpperFence <- function(x) {
+  if (Q3(x) + IQR1(x) > max(x)) {
+    max(x)
   } else {
-    Q3(a.1) + IQR1(a.1)
+    Q3(x) + IQR1(x)
   }
 }
 
-Lower_Fence <- function(a.1) {
-  if (Q1(a.1) - IQR1(a.1) < min(a.1)) {
-    min(a.1)
+LowerFence <- function(x) {
+  if (Q1(x) - IQR1(x) < min(x)) {
+    min(x)
   } else {
-    Q1(a.1) - IQR1(a.1)
+    Q1(x) - IQR1(x)
   } 
 }
 
@@ -64,11 +64,11 @@ Q3_table <- cbind(aggregate(.~YEAR, Input_Table[, -c(1)], Q3))
 Q3s = c("Q3_GDP", "Q3_GNI", "Q3_AG", "Q3_IND", "Q3_MANUF", "Q3_CAP")
 for (i in 1:6) names(Q3_table)[names(Q3_table) == Econ_Indicators[i]] = Q3s[i]
 
-LF_table <- cbind(aggregate(.~YEAR, Input_Table[, -c(1)], Lower_Fence))
+LF_table <- cbind(aggregate(.~YEAR, Input_Table[, -c(1)], LowerFence))
 LFs = c("LF_GDP", "LF_GNI", "LF_AG", "LF_IND", "LF_MANUF", "LF_CAP")
 for (i in 1:6) names(LF_table)[names(LF_table) == Econ_Indicators[i]] = LFs[i]
 
-UF_table <- cbind(aggregate(.~YEAR, Input_Table[, -c(1)], Upper_Fence))
+UF_table <- cbind(aggregate(.~YEAR, Input_Table[, -c(1)], UpperFence))
 UFs = c("UF_GDP", "UF_GNI", "UF_AG", "UF_IND", "UF_MANUF", "UF_CAP")
 for (i in 1:6) names(UF_table)[names(UF_table) == Econ_Indicators[i]] = UFs[i]
 
@@ -83,25 +83,25 @@ Q3_GDP_Growth <- viz_table$Q3_GDP
 Lower_Fence_GDP_Growth <- viz_table$LF_GDP
 Upper_Fence_GDP_Growth <- viz_table$UF_GDP
 
-x_values <- (1990:2021)
+x_axis <- (1990:2021)
 
 par(mar=c(5.1, 4.1, 4.1, 8.1), xpd=TRUE)
 
-plot(x_values, Avg_GDP_Growth, type = "l", col = "black", xlab = "Year", ylab = "GDP growth (annual %)", main = "GDP Growth", ylim = c(min(Lower_Fence_GDP_Growth)-1, max(Upper_Fence_GDP_Growth)+1))
-lines(x_values, Upper_Fence_GDP_Growth, type = "l", lty = 2, col = "black")
-lines(x_values, Q3_GDP_Growth, type = "l", lty = 2, col = "black")
-lines(x_values, Q1_GDP_Growth, type = "l", lty = 2, col = "black")
-lines(x_values, Lower_Fence_GDP_Growth, type = "l", lty = 2, col = "black")
+plot(x_axis, Avg_GDP_Growth, type = "l", col = "black", xlab = "Year", ylab = "GDP growth (annual %)", main = "GDP Growth", ylim = c(min(Lower_Fence_GDP_Growth)-1, max(Upper_Fence_GDP_Growth)+1))
+lines(x_axis, Upper_Fence_GDP_Growth, type = "l", lty = 2, col = "black")
+lines(x_axis, Q3_GDP_Growth, type = "l", lty = 2, col = "black")
+lines(x_axis, Q1_GDP_Growth, type = "l", lty = 2, col = "black")
+lines(x_axis, Lower_Fence_GDP_Growth, type = "l", lty = 2, col = "black")
 
-polygon(c(x_values, rev(x_values)), c(Lower_Fence_GDP_Growth, rev(Q1_GDP_Growth)), col = "#cbdef5", lty = 0)
-polygon(c(x_values, rev(x_values)), c(Q1_GDP_Growth, rev(Q3_GDP_Growth)), col = "#89baf5", lty = 0)
-polygon(c(x_values, rev(x_values)), c(Q3_GDP_Growth, rev(Upper_Fence_GDP_Growth)), col = "#cbdef5", lty = 0)
+polygon(c(x_axis, rev(x_axis)), c(Lower_Fence_GDP_Growth, rev(Q1_GDP_Growth)), col = "#cbdef5", lty = 0)
+polygon(c(x_axis, rev(x_axis)), c(Q1_GDP_Growth, rev(Q3_GDP_Growth)), col = "#89baf5", lty = 0)
+polygon(c(x_axis, rev(x_axis)), c(Q3_GDP_Growth, rev(Upper_Fence_GDP_Growth)), col = "#cbdef5", lty = 0)
 
-lines(x_values, Avg_GDP_Growth, type = "l", lwd = 3, col = "black")
-lines(x_values, Q1_GDP_Growth, type = "l", lwd = 2, lty = 2, col = "black")
-lines(x_values, Q3_GDP_Growth, type = "l", lty = 2, lwd = 2, col = "black")
-lines(x_values, Lower_Fence_GDP_Growth, type = "l", lty = 2, col = "black")
-lines(x_values, Upper_Fence_GDP_Growth, type = "l", lty = 2, col = "black")
+lines(x_axis, Avg_GDP_Growth, type = "l", lwd = 3, col = "black")
+lines(x_axis, Q1_GDP_Growth, type = "l", lwd = 2, lty = 2, col = "black")
+lines(x_axis, Q3_GDP_Growth, type = "l", lty = 2, lwd = 2, col = "black")
+lines(x_axis, Lower_Fence_GDP_Growth, type = "l", lty = 2, col = "black")
+lines(x_axis, Upper_Fence_GDP_Growth, type = "l", lty = 2, col = "black")
 
 legend("topright", inset=c(-0.2,0), cex = 0.75, legend = c("Upper Fence", "3rd Quartile", "Mean", "1st Quartile", "Lower Fence"), lty = c(3, 2, 1, 2, 3), lwd = c(1, 2, 3, 2, 1))
 
@@ -113,25 +113,23 @@ Q3_GNI <- viz_table$Q3_GNI
 Lower_Fence_GNI <- viz_table$LF_GNI
 Upper_Fence_GNI <- viz_table$UF_GNI
 
-x_values <- (1990:2021)
-
 par(mar=c(5.1, 4.1, 4.1, 8.1), xpd=TRUE)
 
-plot(x_values, Avg_GNI, type = "l", col = "black", xlab = "Year", ylab = "GNI", main = "GNI Per Capita (PPP)", ylim = c(min(Lower_Fence_GNI)-1, max(Upper_Fence_GNI)+1))
-lines(x_values, Upper_Fence_GNI, type = "l", lty = 2, col = "black")
-lines(x_values, Q3_GNI, type = "l", lty = 2, col = "black")
-lines(x_values, Q1_GNI, type = "l", lty = 2, col = "black")
-lines(x_values, Lower_Fence_GNI, type = "l", lty = 2, col = "black")
+plot(x_axis, Avg_GNI, type = "l", col = "black", xlab = "Year", ylab = "GNI", main = "GNI Per Capita (PPP)", ylim = c(min(Lower_Fence_GNI)-1, max(Upper_Fence_GNI)+1))
+lines(x_axis, Upper_Fence_GNI, type = "l", lty = 2, col = "black")
+lines(x_axis, Q3_GNI, type = "l", lty = 2, col = "black")
+lines(x_axis, Q1_GNI, type = "l", lty = 2, col = "black")
+lines(x_axis, Lower_Fence_GNI, type = "l", lty = 2, col = "black")
 
-polygon(c(x_values, rev(x_values)), c(Lower_Fence_GNI, rev(Q1_GNI)), col = "#cbdef5", lty = 0)
-polygon(c(x_values, rev(x_values)), c(Q1_GNI, rev(Q3_GNI)), col = "#89baf5", lty = 0)
-polygon(c(x_values, rev(x_values)), c(Q3_GNI, rev(Upper_Fence_GNI)), col = "#cbdef5", lty = 0)
+polygon(c(x_axis, rev(x_axis)), c(Lower_Fence_GNI, rev(Q1_GNI)), col = "#cbdef5", lty = 0)
+polygon(c(x_axis, rev(x_axis)), c(Q1_GNI, rev(Q3_GNI)), col = "#89baf5", lty = 0)
+polygon(c(x_axis, rev(x_axis)), c(Q3_GNI, rev(Upper_Fence_GNI)), col = "#cbdef5", lty = 0)
 
-lines(x_values, Avg_GNI, type = "l", lwd = 3, col = "black")
-lines(x_values, Q1_GNI, type = "l", lwd = 2, lty = 2, col = "black")
-lines(x_values, Q3_GNI, type = "l", lty = 2, lwd = 2, col = "black")
-lines(x_values, Lower_Fence_GNI, type = "l", lty = 2, col = "black")
-lines(x_values, Upper_Fence_GNI, type = "l", lty = 2, col = "black")
+lines(x_axis, Avg_GNI, type = "l", lwd = 3, col = "black")
+lines(x_axis, Q1_GNI, type = "l", lwd = 2, lty = 2, col = "black")
+lines(x_axis, Q3_GNI, type = "l", lty = 2, lwd = 2, col = "black")
+lines(x_axis, Lower_Fence_GNI, type = "l", lty = 2, col = "black")
+lines(x_axis, Upper_Fence_GNI, type = "l", lty = 2, col = "black")
 
 legend("topright", inset=c(-0.2,0), cex = 0.75, legend = c("Upper Fence", "3rd Quartile", "Mean", "1st Quartile", "Lower Fence"), lty = c(3, 2, 1, 2, 3), lwd = c(1, 2, 3, 2, 1))
 
@@ -143,25 +141,23 @@ Q3_AG <- viz_table$Q3_AG
 Lower_Fence_AG <- viz_table$LF_AG
 Upper_Fence_AG <- viz_table$UF_AG
 
-x_values <- (1990:2021)
-
 par(mar=c(5.1, 4.1, 4.1, 8.1), xpd=TRUE)
 
-plot(x_values, Avg_AG, type = "l", col = "black", xlab = "Year", ylab = "Agriculture (% of GDP)", main = "Agriculture, forestry, and fishing, value added (% of GDP)", ylim = c(min(Lower_Fence_AG)-1, max(Upper_Fence_AG)+1))
-lines(x_values, Upper_Fence_AG, type = "l", lty = 2, col = "black")
-lines(x_values, Q3_AG, type = "l", lty = 2, col = "black")
-lines(x_values, Q1_AG, type = "l", lty = 2, col = "black")
-lines(x_values, Lower_Fence_AG, type = "l", lty = 2, col = "black")
+plot(x_axis, Avg_AG, type = "l", col = "black", xlab = "Year", ylab = "Agriculture (% of GDP)", main = "Agriculture, forestry, and fishing, value added (% of GDP)", ylim = c(min(Lower_Fence_AG)-1, max(Upper_Fence_AG)+1))
+lines(x_axis, Upper_Fence_AG, type = "l", lty = 2, col = "black")
+lines(x_axis, Q3_AG, type = "l", lty = 2, col = "black")
+lines(x_axis, Q1_AG, type = "l", lty = 2, col = "black")
+lines(x_axis, Lower_Fence_AG, type = "l", lty = 2, col = "black")
 
-polygon(c(x_values, rev(x_values)), c(Lower_Fence_AG, rev(Q1_AG)), col = "#cbdef5", lty = 0)
-polygon(c(x_values, rev(x_values)), c(Q1_AG, rev(Q3_AG)), col = "#89baf5", lty = 0)
-polygon(c(x_values, rev(x_values)), c(Q3_AG, rev(Upper_Fence_AG)), col = "#cbdef5", lty = 0)
+polygon(c(x_axis, rev(x_axis)), c(Lower_Fence_AG, rev(Q1_AG)), col = "#cbdef5", lty = 0)
+polygon(c(x_axis, rev(x_axis)), c(Q1_AG, rev(Q3_AG)), col = "#89baf5", lty = 0)
+polygon(c(x_axis, rev(x_axis)), c(Q3_AG, rev(Upper_Fence_AG)), col = "#cbdef5", lty = 0)
 
-lines(x_values, Avg_AG, type = "l", lwd = 3, col = "black")
-lines(x_values, Q1_AG, type = "l", lwd = 2, lty = 2, col = "black")
-lines(x_values, Q3_AG, type = "l", lty = 2, lwd = 2, col = "black")
-lines(x_values, Lower_Fence_AG, type = "l", lty = 2, col = "black")
-lines(x_values, Upper_Fence_AG, type = "l", lty = 2, col = "black")
+lines(x_axis, Avg_AG, type = "l", lwd = 3, col = "black")
+lines(x_axis, Q1_AG, type = "l", lwd = 2, lty = 2, col = "black")
+lines(x_axis, Q3_AG, type = "l", lty = 2, lwd = 2, col = "black")
+lines(x_axis, Lower_Fence_AG, type = "l", lty = 2, col = "black")
+lines(x_axis, Upper_Fence_AG, type = "l", lty = 2, col = "black")
 
 legend("topright", inset=c(-0.2,0), cex = 0.75, legend = c("Upper Fence", "3rd Quartile", "Mean", "1st Quartile", "Lower Fence"), lty = c(3, 2, 1, 2, 3), lwd = c(1, 2, 3, 2, 1))
 
@@ -173,25 +169,23 @@ Q3_IND <- viz_table$Q3_IND
 Lower_Fence_IND <- viz_table$LF_IND
 Upper_Fence_IND <- viz_table$UF_IND
 
-x_values <- (1990:2021)
-
 par(mar=c(5.1, 4.1, 4.1, 8.1), xpd=TRUE)
 
-plot(x_values, Avg_IND, type = "l", col = "black", xlab = "Year", ylab = "Industry (% of GDP)", main = "Industry (including construction), value added (% of GDP)", ylim = c(min(Lower_Fence_IND)-1, max(Upper_Fence_IND)+1))
-lines(x_values, Upper_Fence_IND, type = "l", lty = 2, col = "black")
-lines(x_values, Q3_IND, type = "l", lty = 2, col = "black")
-lines(x_values, Q1_IND, type = "l", lty = 2, col = "black")
-lines(x_values, Lower_Fence_IND, type = "l", lty = 2, col = "black")
+plot(x_axis, Avg_IND, type = "l", col = "black", xlab = "Year", ylab = "Industry (% of GDP)", main = "Industry (including construction), value added (% of GDP)", ylim = c(min(Lower_Fence_IND)-1, max(Upper_Fence_IND)+1))
+lines(x_axis, Upper_Fence_IND, type = "l", lty = 2, col = "black")
+lines(x_axis, Q3_IND, type = "l", lty = 2, col = "black")
+lines(x_axis, Q1_IND, type = "l", lty = 2, col = "black")
+lines(x_axis, Lower_Fence_IND, type = "l", lty = 2, col = "black")
 
-polygon(c(x_values, rev(x_values)), c(Lower_Fence_IND, rev(Q1_IND)), col = "#cbdef5", lty = 0)
-polygon(c(x_values, rev(x_values)), c(Q1_IND, rev(Q3_IND)), col = "#89baf5", lty = 0)
-polygon(c(x_values, rev(x_values)), c(Q3_IND, rev(Upper_Fence_IND)), col = "#cbdef5", lty = 0)
+polygon(c(x_axis, rev(x_axis)), c(Lower_Fence_IND, rev(Q1_IND)), col = "#cbdef5", lty = 0)
+polygon(c(x_axis, rev(x_axis)), c(Q1_IND, rev(Q3_IND)), col = "#89baf5", lty = 0)
+polygon(c(x_axis, rev(x_axis)), c(Q3_IND, rev(Upper_Fence_IND)), col = "#cbdef5", lty = 0)
 
-lines(x_values, Avg_IND, type = "l", lwd = 3, col = "black")
-lines(x_values, Q1_IND, type = "l", lwd = 2, lty = 2, col = "black")
-lines(x_values, Q3_IND, type = "l", lty = 2, lwd = 2, col = "black")
-lines(x_values, Lower_Fence_IND, type = "l", lty = 2, col = "black")
-lines(x_values, Upper_Fence_IND, type = "l", lty = 2, col = "black")
+lines(x_axis, Avg_IND, type = "l", lwd = 3, col = "black")
+lines(x_axis, Q1_IND, type = "l", lwd = 2, lty = 2, col = "black")
+lines(x_axis, Q3_IND, type = "l", lty = 2, lwd = 2, col = "black")
+lines(x_axis, Lower_Fence_IND, type = "l", lty = 2, col = "black")
+lines(x_axis, Upper_Fence_IND, type = "l", lty = 2, col = "black")
 
 legend("topright", inset=c(-0.2,0), cex = 0.75, legend = c("Upper Fence", "3rd Quartile", "Mean", "1st Quartile", "Lower Fence"), lty = c(3, 2, 1, 2, 3), lwd = c(1, 2, 3, 2, 1))
 
@@ -203,25 +197,23 @@ Q3_MANUF <- viz_table$Q3_MANUF
 Lower_Fence_MANUF <- viz_table$LF_MANUF
 Upper_Fence_MANUF <- viz_table$UF_MANUF
 
-x_values <- (1990:2021)
-
 par(mar=c(5.1, 4.1, 4.1, 8.1), xpd=TRUE)
 
-plot(x_values, Avg_MANUF, type = "l", col = "black", xlab = "Year", ylab = "Manufacturing (% of GDP)", main = "Manufacturing, value added (% of GDP)", ylim = c(min(Lower_Fence_MANUF)-1, max(Upper_Fence_MANUF)+1))
-lines(x_values, Upper_Fence_MANUF, type = "l", lty = 2, col = "black")
-lines(x_values, Q3_MANUF, type = "l", lty = 2, col = "black")
-lines(x_values, Q1_MANUF, type = "l", lty = 2, col = "black")
-lines(x_values, Lower_Fence_MANUF, type = "l", lty = 2, col = "black")
+plot(x_axis, Avg_MANUF, type = "l", col = "black", xlab = "Year", ylab = "Manufacturing (% of GDP)", main = "Manufacturing, value added (% of GDP)", ylim = c(min(Lower_Fence_MANUF)-1, max(Upper_Fence_MANUF)+1))
+lines(x_axis, Upper_Fence_MANUF, type = "l", lty = 2, col = "black")
+lines(x_axis, Q3_MANUF, type = "l", lty = 2, col = "black")
+lines(x_axis, Q1_MANUF, type = "l", lty = 2, col = "black")
+lines(x_axis, Lower_Fence_MANUF, type = "l", lty = 2, col = "black")
 
-polygon(c(x_values, rev(x_values)), c(Lower_Fence_MANUF, rev(Q1_MANUF)), col = "#cbdef5", lty = 0)
-polygon(c(x_values, rev(x_values)), c(Q1_MANUF, rev(Q3_MANUF)), col = "#89baf5", lty = 0)
-polygon(c(x_values, rev(x_values)), c(Q3_MANUF, rev(Upper_Fence_MANUF)), col = "#cbdef5", lty = 0)
+polygon(c(x_axis, rev(x_axis)), c(Lower_Fence_MANUF, rev(Q1_MANUF)), col = "#cbdef5", lty = 0)
+polygon(c(x_axis, rev(x_axis)), c(Q1_MANUF, rev(Q3_MANUF)), col = "#89baf5", lty = 0)
+polygon(c(x_axis, rev(x_axis)), c(Q3_MANUF, rev(Upper_Fence_MANUF)), col = "#cbdef5", lty = 0)
 
-lines(x_values, Avg_MANUF, type = "l", lwd = 3, col = "black")
-lines(x_values, Q1_MANUF, type = "l", lwd = 2, lty = 2, col = "black")
-lines(x_values, Q3_MANUF, type = "l", lty = 2, lwd = 2, col = "black")
-lines(x_values, Lower_Fence_MANUF, type = "l", lty = 2, col = "black")
-lines(x_values, Upper_Fence_MANUF, type = "l", lty = 2, col = "black")
+lines(x_axis, Avg_MANUF, type = "l", lwd = 3, col = "black")
+lines(x_axis, Q1_MANUF, type = "l", lwd = 2, lty = 2, col = "black")
+lines(x_axis, Q3_MANUF, type = "l", lty = 2, lwd = 2, col = "black")
+lines(x_axis, Lower_Fence_MANUF, type = "l", lty = 2, col = "black")
+lines(x_axis, Upper_Fence_MANUF, type = "l", lty = 2, col = "black")
 
 legend("topright", inset=c(-0.2,0), cex = 0.75, legend = c("Upper Fence", "3rd Quartile", "Mean", "1st Quartile", "Lower Fence"), lty = c(3, 2, 1, 2, 3), lwd = c(1, 2, 3, 2, 1))
 
@@ -233,25 +225,23 @@ Q3_CAP <- viz_table$Q3_CAP
 Lower_Fence_CAP <- viz_table$LF_CAP
 Upper_Fence_CAP <- viz_table$UF_CAP
 
-x_values <- (1990:2021)
-
 par(mar=c(5.1, 4.1, 4.1, 8.1), xpd=TRUE)
 
-plot(x_values, Avg_CAP, type = "l", col = "black", xlab = "Year", ylab = "Gross Capital Formation (USD)", main = "Gross capital formation (current US$)", ylim = c(min(Lower_Fence_CAP)-1, max(Upper_Fence_CAP)+1))
-lines(x_values, Upper_Fence_CAP, type = "l", lty = 2, col = "black")
-lines(x_values, Q3_CAP, type = "l", lty = 2, col = "black")
-lines(x_values, Q1_CAP, type = "l", lty = 2, col = "black")
-lines(x_values, Lower_Fence_CAP, type = "l", lty = 2, col = "black")
+plot(x_axis, Avg_CAP, type = "l", col = "black", xlab = "Year", ylab = "Gross Capital Formation (USD)", main = "Gross capital formation (current US$)", ylim = c(min(Lower_Fence_CAP)-1, max(Upper_Fence_CAP)+1))
+lines(x_axis, Upper_Fence_CAP, type = "l", lty = 2, col = "black")
+lines(x_axis, Q3_CAP, type = "l", lty = 2, col = "black")
+lines(x_axis, Q1_CAP, type = "l", lty = 2, col = "black")
+lines(x_axis, Lower_Fence_CAP, type = "l", lty = 2, col = "black")
 
-polygon(c(x_values, rev(x_values)), c(Lower_Fence_CAP, rev(Q1_CAP)), col = "#cbdef5", lty = 0)
-polygon(c(x_values, rev(x_values)), c(Q1_CAP, rev(Q3_CAP)), col = "#89baf5", lty = 0)
-polygon(c(x_values, rev(x_values)), c(Q3_CAP, rev(Upper_Fence_CAP)), col = "#cbdef5", lty = 0)
+polygon(c(x_axis, rev(x_axis)), c(Lower_Fence_CAP, rev(Q1_CAP)), col = "#cbdef5", lty = 0)
+polygon(c(x_axis, rev(x_axis)), c(Q1_CAP, rev(Q3_CAP)), col = "#89baf5", lty = 0)
+polygon(c(x_axis, rev(x_axis)), c(Q3_CAP, rev(Upper_Fence_CAP)), col = "#cbdef5", lty = 0)
 
-lines(x_values, Avg_CAP, type = "l", lwd = 3, col = "black")
-lines(x_values, Q1_CAP, type = "l", lwd = 2, lty = 2, col = "black")
-lines(x_values, Q3_CAP, type = "l", lty = 2, lwd = 2, col = "black")
-lines(x_values, Lower_Fence_CAP, type = "l", lty = 2, col = "black")
-lines(x_values, Upper_Fence_CAP, type = "l", lty = 2, col = "black")
+lines(x_axis, Avg_CAP, type = "l", lwd = 3, col = "black")
+lines(x_axis, Q1_CAP, type = "l", lwd = 2, lty = 2, col = "black")
+lines(x_axis, Q3_CAP, type = "l", lty = 2, lwd = 2, col = "black")
+lines(x_axis, Lower_Fence_CAP, type = "l", lty = 2, col = "black")
+lines(x_axis, Upper_Fence_CAP, type = "l", lty = 2, col = "black")
 
 legend("topright", inset=c(-0.2,0), cex = 0.75, legend = c("Upper Fence", "3rd Quartile", "Mean", "1st Quartile", "Lower Fence"), lty = c(3, 2, 1, 2, 3), lwd = c(1, 2, 3, 2, 1))
 
@@ -265,8 +255,8 @@ ADF_df <- data.frame(COUNTRY = Country_List)
 
 for (i in 3:8) {
   A <- NULL
-  for (g in Country_List) {
-    B <- na.omit(Input_Table[Input_Table$COUNTRY == g, c(i)])
+  for (x in Country_List) { 
+    B <- na.omit(Input_Table[Input_Table$COUNTRY == x, c(i)])
     if (length(B) == 0 | length(B) == 1) {
       A <- append(A, 1)
     } else {
@@ -291,8 +281,8 @@ KPSS_df <- data.frame(COUNTRY = Country_List)
 
 for (i in 3:8) {
   A <- NULL
-  for (g in Country_List) {
-    B <- na.omit(Input_Table[Input_Table$COUNTRY == g, c(i)])
+  for (x in Country_List) {
+    B <- na.omit(Input_Table[Input_Table$COUNTRY == x, c(i)])
     if (length(B) == 0 | length(B) == 1) {
       A <- append(A, 0)
     } else {
@@ -314,30 +304,30 @@ for (i in 2:7) {
 
 ADF_KPSS_df <- data.frame(COUNTRY = Country_List)
 
-Case_Test <- function(x.1, x.2) {
-  if (x.1 < 0.05 && x.2 > 0.05) {
+Case_Test <- function(x, y) {
+  if (x < 0.05 && y > 0.05) {
     "Case 1"
-  } else if (x.1 < 0.05 && x.2 < 0.05) {
+  } else if (x < 0.05 && y < 0.05) {
     "Case 2"
-  } else if (x.1 == 1 | x.2 == 1) {
+  } else if (x == 1 | y == 1) {
     "Case 4"
-  } else if (x.1 > 0.05 && x.2 > 0.05) {
+  } else if (x > 0.05 && y > 0.05) {
     "Case 3"
-  } else if (x.1 > 0.05 && x.2 < 0.05) {
+  } else if (x > 0.05 && y < 0.05) {
     "Case 4"
   }
 }
 
 for (i in 2:7) {
-  X <- NULL
+  D <- NULL
   C <- NULL
-  for (g in Country_List) {
-    A <- ADF_df[ADF_df$COUNTRY == g, c(i)]
-    B <- KPSS_df[KPSS_df$COUNTRY == g, c(i)]
+  for (x in Country_List) {
+    A <- ADF_df[ADF_df$COUNTRY == x, c(i)]
+    B <- KPSS_df[KPSS_df$COUNTRY == x, c(i)]
     C <- Case_Test(A, B)
-    X <- append(X, C)
+    D <- append(D, C)
   }
-  ADF_KPSS_df <- cbind(ADF_KPSS_df, X)
+  ADF_KPSS_df <- cbind(ADF_KPSS_df, D)
 }
 
 for (i in 2:7) {
@@ -351,6 +341,7 @@ Case_4_count <- sum(ADF_KPSS_df == "Case 4")
 
 #===== Difference method on Case 2 & Case 3
 
+# the following variables (_Case_4) each contain a vector containing all countries that failed the ADF/KPSS tests 
 GDP_Case_4 <- ADF_KPSS_df[ADF_KPSS_df$GDP_GROWTH == "Case 4", c(1)]
 GNI_Case_4 <- ADF_KPSS_df[ADF_KPSS_df$GNI_CAPITA_PPP == "Case 4", c(1)]
 AG_Case_4 <- ADF_KPSS_df[ADF_KPSS_df$AG_GDP == "Case 4", c(1)]
@@ -358,32 +349,34 @@ IND_Case_4 <- ADF_KPSS_df[ADF_KPSS_df$INDUSTRY_GDP == "Case 4", c(1)]
 MANU_Case_4 <- ADF_KPSS_df[ADF_KPSS_df$MANUFACTURING_GDP == "Case 4", c(1)]
 CAP_Case_4 <- ADF_KPSS_df[ADF_KPSS_df$GROSS_CAPITAL == "Case 4", c(1)]
 
+# create a new table from Input_Table and exclude datapoints associated with ADF/KPSS Case_4 outcomes
 Transition_Table <- Input_Table
 
-for (h in GDP_Case_4) {
-  Transition_Table[Transition_Table$COUNTRY == h, c(3)] = NA
+for (x in GDP_Case_4) {
+  Transition_Table[Transition_Table$COUNTRY == x, c(3)] = NA
 }
 
-for (h in GNI_Case_4) {
-  Transition_Table[Transition_Table$COUNTRY == h, c(4)] = NA
+for (x in GNI_Case_4) {
+  Transition_Table[Transition_Table$COUNTRY == x, c(4)] = NA
 }
 
-for (h in AG_Case_4) {
-  Transition_Table[Transition_Table$COUNTRY == h, c(5)] = NA
+for (x in AG_Case_4) {
+  Transition_Table[Transition_Table$COUNTRY == x, c(5)] = NA
 }
 
-for (h in IND_Case_4) {
-  Transition_Table[Transition_Table$COUNTRY == h, c(6)] = NA
+for (x in IND_Case_4) {
+  Transition_Table[Transition_Table$COUNTRY == x, c(6)] = NA
 }
 
-for (h in MANU_Case_4) {
-  Transition_Table[Transition_Table$COUNTRY == h, c(7)] = NA
+for (x in MANU_Case_4) {
+  Transition_Table[Transition_Table$COUNTRY == x, c(7)] = NA
 }
 
-for (h in CAP_Case_4) {
-  Transition_Table[Transition_Table$COUNTRY == h, c(8)] = NA
+for (x in CAP_Case_4) {
+  Transition_Table[Transition_Table$COUNTRY == x, c(8)] = NA
 }
 
+# identify countries where ADF/KPSS tests succeeded or partially succeeded and apply the difference method to those series
 GDP_Cases <- ADF_KPSS_df[ADF_KPSS_df$GDP_GROWTH == "Case 1" | ADF_KPSS_df$GDP_GROWTH == "Case 2" | ADF_KPSS_df$GDP_GROWTH == "Case 3", c(1)]
 GNI_Cases <- ADF_KPSS_df[ADF_KPSS_df$GNI_CAPITA_PPP == "Case 1" | ADF_KPSS_df$GNI_CAPITA_PPP == "Case 2" | ADF_KPSS_df$GNI_CAPITA_PPP == "Case 3", c(1)]
 AG_Cases <- ADF_KPSS_df[ADF_KPSS_df$AG_GDP == "Case 1" | ADF_KPSS_df$AG_GDP == "Case 2" | ADF_KPSS_df$AG_GDP == "Case 3", c(1)]
@@ -391,46 +384,46 @@ IND_Cases <- ADF_KPSS_df[ADF_KPSS_df$INDUSTRY_GDP == "Case 1" | ADF_KPSS_df$INDU
 MANU_Cases <- ADF_KPSS_df[ADF_KPSS_df$MANUFACTURING_GDP == "Case 1" | ADF_KPSS_df$MANUFACTURING_GDP == "Case 2" | ADF_KPSS_df$MANUFACTURING_GDP == "Case 3", c(1)]
 CAP_Cases <- ADF_KPSS_df[ADF_KPSS_df$GROSS_CAPITAL == "Case 1" | ADF_KPSS_df$GROSS_CAPITAL == "Case 2" | ADF_KPSS_df$GROSS_CAPITAL == "Case 3", c(1)]
 
-for (h in GDP_Cases) {
-    U <- Transition_Table[Transition_Table$COUNTRY == h, c(3)]
-    A <- diff(U)
+for (x in GDP_Cases) {
+    B <- Transition_Table[Transition_Table$COUNTRY == x, c(3)]
+    A <- diff(B)
     A <- append(A, NA)
-    Transition_Table[Transition_Table$COUNTRY == h, c(3)] = A
+    Transition_Table[Transition_Table$COUNTRY == x, c(3)] = A
   }
 
-for (h in GNI_Cases) {
-  U <- Transition_Table[Transition_Table$COUNTRY == h, c(4)]
-  A <- diff(U)
+for (x in GNI_Cases) {
+  B <- Transition_Table[Transition_Table$COUNTRY == x, c(4)]
+  A <- diff(B)
   A <- append(A, NA)
-  Transition_Table[Transition_Table$COUNTRY == h, c(4)] = A
+  Transition_Table[Transition_Table$COUNTRY == x, c(4)] = A
 }
 
-for (h in AG_Cases) {
-  U <- Transition_Table[Transition_Table$COUNTRY == h, c(5)]
-  A <- diff(U)
+for (x in AG_Cases) {
+  B <- Transition_Table[Transition_Table$COUNTRY == x, c(5)]
+  A <- diff(B)
   A <- append(A, NA)
-  Transition_Table[Transition_Table$COUNTRY == h, c(5)] = A
+  Transition_Table[Transition_Table$COUNTRY == x, c(5)] = A
 }
 
-for (h in IND_Cases) {
-  U <- Transition_Table[Transition_Table$COUNTRY == h, c(6)]
-  A <- diff(U)
+for (x in IND_Cases) {
+  B <- Transition_Table[Transition_Table$COUNTRY == x, c(6)]
+  A <- diff(B)
   A <- append(A, NA)
-  Transition_Table[Transition_Table$COUNTRY == h, c(6)] = A
+  Transition_Table[Transition_Table$COUNTRY == x, c(6)] = A
 }
 
-for (h in MANU_Cases) {
-  U <- Transition_Table[Transition_Table$COUNTRY == h, c(7)]
-  A <- diff(U)
+for (x in MANU_Cases) {
+  B <- Transition_Table[Transition_Table$COUNTRY == x, c(7)]
+  A <- diff(B)
   A <- append(A, NA)
-  Transition_Table[Transition_Table$COUNTRY == h, c(7)] = A
+  Transition_Table[Transition_Table$COUNTRY == x, c(7)] = A
 }
 
-for (h in CAP_Cases) {
-  U <- Transition_Table[Transition_Table$COUNTRY == h, c(8)]
-  A <- diff(U)
+for (x in CAP_Cases) {
+  B <- Transition_Table[Transition_Table$COUNTRY == x, c(8)]
+  A <- diff(B)
   A <- append(A, NA)
-  Transition_Table[Transition_Table$COUNTRY == h, c(8)] = A
+  Transition_Table[Transition_Table$COUNTRY == x, c(8)] = A
 }
 
 #===== Second ADF Test (Transition_Table)
@@ -439,8 +432,8 @@ ADF_df_2 <- data.frame(COUNTRY = Country_List)
 
 for (i in 3:8) {
   A <- NULL
-  for (g in Country_List) {
-    B <- na.omit(Transition_Table[Transition_Table$COUNTRY == g, c(i)])
+  for (x in Country_List) {
+    B <- na.omit(Transition_Table[Transition_Table$COUNTRY == x, c(i)])
     if (length(B) == 0 | length(B) == 1) {
       A <- append(A, 1)
     } else {
@@ -460,8 +453,8 @@ KPSS_df_2 <- data.frame(COUNTRY = Country_List)
 
 for (i in 3:8) {
   A <- NULL
-  for (g in Country_List) {
-    B <- na.omit(Transition_Table[Transition_Table$COUNTRY == g, c(i)])
+  for (x in Country_List) {
+    B <- na.omit(Transition_Table[Transition_Table$COUNTRY == x, c(i)])
     if (length(B) == 0 | length(B) == 1) {
       A <- append(A, 0)
     } else {
@@ -480,24 +473,25 @@ for (i in 2:7) {
 
 ADF_KPSS_df_2 <- data.frame(COUNTRY = Country_List)
 
-Case_Test_2 <- function(x.1, x.2) {
-  if (x.1 < 0.05 && x.2 > 0.05) {
+Case_Test_2 <- function(x, y) {
+  if (x < 0.05 && y > 0.05) {
     "Case 1"
   } else "Case 4"
 }
 
 for (i in 2:7) {
-  X <- NULL
+  D <- NULL
   C <- NULL
-  for (g in Country_List) {
-    A <- ADF_df_2[ADF_df_2$COUNTRY == g, c(i)]
-    B <- KPSS_df_2[KPSS_df_2$COUNTRY == g, c(i)]
+  for (x in Country_List) {
+    A <- ADF_df_2[ADF_df_2$COUNTRY == x, c(i)]
+    B <- KPSS_df_2[KPSS_df_2$COUNTRY == x, c(i)]
     C <- Case_Test_2(A, B)
-    X <- append(X, C)
+    D <- append(D, C)
   }
-  ADF_KPSS_df_2 <- cbind(ADF_KPSS_df_2, X)
+  ADF_KPSS_df_2 <- cbind(ADF_KPSS_df_2, D)
 }
 
+# create a new table from Transition_Table and exclude datapoints associated with ADF/KPSS Case_4 outcomes
 Transformed_Table <- Transition_Table
 
 GDP_Case_4 <- ADF_KPSS_df_2[ADF_KPSS_df_2$GDP_GROWTH == "Case 4", c(1)]
@@ -507,105 +501,58 @@ IND_Case_4 <- ADF_KPSS_df_2[ADF_KPSS_df_2$INDUSTRY_GDP == "Case 4", c(1)]
 MANU_Case_4 <- ADF_KPSS_df_2[ADF_KPSS_df_2$MANUFACTURING_GDP == "Case 4", c(1)]
 CAP_Case_4 <- ADF_KPSS_df_2[ADF_KPSS_df_2$GROSS_CAPITAL == "Case 4", c(1)]
 
-
-for (h in GDP_Case_4) {
-  Transformed_Table[Transformed_Table$COUNTRY == h, c(3)] = NA
+for (x in GDP_Case_4) {
+  Transformed_Table[Transformed_Table$COUNTRY == x, c(3)] = NA
 }
 
-for (h in GNI_Case_4) {
-  Transformed_Table[Transformed_Table$COUNTRY == h, c(4)] = NA
+for (x in GNI_Case_4) {
+  Transformed_Table[Transformed_Table$COUNTRY == x, c(4)] = NA
 }
 
-for (h in AG_Case_4) {
-  Transformed_Table[Transformed_Table$COUNTRY == h, c(5)] = NA
+for (x in AG_Case_4) {
+  Transformed_Table[Transformed_Table$COUNTRY == x, c(5)] = NA
 }
 
-for (h in IND_Case_4) {
-  Transformed_Table[Transformed_Table$COUNTRY == h, c(6)] = NA
+for (x in IND_Case_4) {
+  Transformed_Table[Transformed_Table$COUNTRY == x, c(6)] = NA
 }
 
-for (h in MANU_Case_4) {
-  Transformed_Table[Transformed_Table$COUNTRY == h, c(7)] = NA
+for (x in MANU_Case_4) {
+  Transformed_Table[Transformed_Table$COUNTRY == x, c(7)] = NA
 }
 
-for (h in CAP_Case_4) {
-  Transformed_Table[Transformed_Table$COUNTRY == h, c(8)] = NA
-}
-
-GDP_Cases <- ADF_KPSS_df_2[ADF_KPSS_df_2$GDP_GROWTH == "Case 1", c(1)]
-GNI_Cases <- ADF_KPSS_df_2[ADF_KPSS_df_2$GNI_CAPITA_PPP == "Case 1", c(1)]
-AG_Cases <- ADF_KPSS_df_2[ADF_KPSS_df_2$AG_GDP == "Case 1", c(1)]
-IND_Cases <- ADF_KPSS_df_2[ADF_KPSS_df_2$INDUSTRY_GDP == "Case 1", c(1)]
-MANU_Cases <- ADF_KPSS_df_2[ADF_KPSS_df_2$MANUFACTURING_GDP == "Case 1", c(1)]
-CAP_Cases <- ADF_KPSS_df_2[ADF_KPSS_df_2$GROSS_CAPITAL == "Case 1", c(1)]
-
-for (h in GDP_Cases) {
-  U <- Transformed_Table[Transformed_Table$COUNTRY == h, c(3)]
-  A <- diff(U)
-  A <- append(A, NA)
-  Transformed_Table[Transformed_Table$COUNTRY == h, c(3)] = A
-}
-
-for (h in GNI_Cases) {
-  U <- Transformed_Table[Transformed_Table$COUNTRY == h, c(4)]
-  A <- diff(U)
-  A <- append(A, NA)
-  Transformed_Table[Transformed_Table$COUNTRY == h, c(4)] = A
-}
-
-for (h in AG_Cases) {
-  U <- Transformed_Table[Transformed_Table$COUNTRY == h, c(5)]
-  A <- diff(U)
-  A <- append(A, NA)
-  Transformed_Table[Transformed_Table$COUNTRY == h, c(5)] = A
-}
-
-for (h in IND_Cases) {
-  U <- Transformed_Table[Transformed_Table$COUNTRY == h, c(6)]
-  A <- diff(U)
-  A <- append(A, NA)
-  Transformed_Table[Transformed_Table$COUNTRY == h, c(6)] = A
-}
-
-for (h in MANU_Cases) {
-  U <- Transformed_Table[Transformed_Table$COUNTRY == h, c(7)]
-  A <- diff(U)
-  A <- append(A, NA)
-  Transformed_Table[Transformed_Table$COUNTRY == h, c(7)] = A
-}
-
-for (h in CAP_Cases) {
-  U <- Transformed_Table[Transformed_Table$COUNTRY == h, c(8)]
-  A <- diff(U)
-  A <- append(A, NA)
-  Transformed_Table[Transformed_Table$COUNTRY == h, c(8)] = A
+for (x in CAP_Case_4) {
+  Transformed_Table[Transformed_Table$COUNTRY == x, c(8)] = NA
 }
 
 Trans_Table_NAs <- as.numeric(paste0(table(is.na(Transformed_Table)))[2])
 Trans_Table <- as.numeric(paste0(table(is.na(Transformed_Table)))[1])
 
-#===== Granger analysis on Transform_Table
-Q <- NULL
+#===== Granger analysis on Transformed_Table
+
+# create Output_Table with each country corresponding to orders ("lags") 1-5
+A <- NULL
 COUNTRIES <- NULL
 Lag_ <- NULL
 
-for (q in Country_List) {
-  Q <- c(q, q, q, q, q)
-  COUNTRIES <- c(COUNTRIES, Q)
+for (x in Country_List) {
+  A <- c(x, x, x, x, x)
+  COUNTRIES <- c(COUNTRIES, A)
 }
 
-for (w in 1:length(Country_List)) {
-  W <- c(1, 2, 3, 4, 5)
-  Lag_ <- c(Lag_, W)
+for (i in 1:length(Country_List)) {
+  A <- c(1, 2, 3, 4, 5)
+  Lag_ <- c(Lag_, A)
 }
 
 Output_Table <- data.frame(COUNTRIES, Lag_)
 
-granger_test <- function(xx, yy, zz, XX) {
+# define granger function such that any error will return 1, which will allow easier tabulation of successful (p<0.05) granger tests later
+granger_test <- function(x, y, z, XX) {
   tryCatch(
     {
-      aa = grangertest(xx ~ yy, order = zz, data = XX)
-      return(aa)
+      a = grangertest(x ~ y, order = z, data = XX)
+      return(a)
     },
     error = function(e) {
       return(1)
@@ -616,7 +563,7 @@ granger_test <- function(xx, yy, zz, XX) {
 granger_fail <- NULL
 
 for (i in 3:8) {
-  J <- c(3:8)[-(i-2)]
+  J <- c(3:8)[-(i-2)] #permits testing of distinct economic indicators (i.e. GDP ~ GNI, GNI ~ Ag; neither GDP ~ GDP nor GNI ~ GNI)
   for (j in J) {
     A <- NULL
     B <- NULL
@@ -627,25 +574,25 @@ for (i in 3:8) {
       A <- Transformed_Table[Transformed_Table$COUNTRY == x, c(i)]
       B <- Transformed_Table[Transformed_Table$COUNTRY == x, c(j)]
       if (length(na.omit(A)) == 0 | length(na.omit(B)) == 0) {
-        O <- c(1, 1, 1, 1, 1)
+        O <- c(1, 1, 1, 1, 1) # if series A or B is empty (i.e. "Case_4" such that all values were transformed to NA), then granger values are recorded as 1
         granger_fail <- append(granger_fail, 1)
       } else {
         L <- length(A)
-        for (p in 1:L) {
+        for (p in 1:L) { # this for loop snips time series (A and B) of differing lengths such that the lengths of the resulting A and B are equal  
           if (is.na(A[p]) | is.na(B[p])) {
             A <- A[c(-p)]
             B <- B[c(-p)]
           }
         }
-        m <- matrix(c(A, B), ncol = 2)
-        myts <- ts(m, start = 1, frequency = 1)
+        m <- matrix(c(A, B), ncol = 2) # transform vectors A and B into a matrix (requirement for time series transformation)
+        myts <- ts(m, start = 1, frequency = 1) # transform matrix into time series (requirement for granger analysis)
         for (k in 1:5) {
           granger_result <- granger_test(A, B, k, myts)
-          if ("numeric" %in% class(granger_result)) {
+          if ("numeric" %in% class(granger_result)) { # "numeric" corresponds to granger_test TryCatch transforming an error to 1
             D <- 1
-            granger_fail <- append(granger_fail, 1)
+            granger_fail <- append(granger_fail, 1) # record this failure for final performance summary
           } else {
-            D <- granger_result["Pr(>F)"][2,]
+            D <- granger_result["Pr(>F)"][2,] # extracting p-values from the result object of grangertest() via indexing
           }
           O <- append(O, D)
         }
@@ -1062,19 +1009,19 @@ granger_sum <- sum(granger_sum)
 
 # Print summary of Granger analyses
 
-summary_funct <- function(aa, bb, cc, dd, ee, ff, gg, hh) {
+summary_funct <- function(a, b, c, d, e, f, g, h) {
   print("World Bank csv file download covered 217 countries, 6 economic development indicators, and 43 years (1980-2022).")
   print("Out of a total possible 55,986 data points, actions were taken to eliminate NULL/empty values, resulting in 199 countries")
   print("over 1990-2021: 1,194 data series or 37,554 data points, of which 3,757 (10%) are NULL/empty and 71 are imputed (0.1%).")
   print("See metadata & data cleaning Excel file for more detail.")
   cat("\n")
-  print(paste0(aa, " data series passed ADF & KPSS tests. ", bb + cc, " partially passed the tests and require further transformation,"))
-  print(paste0("and ", dd, " did not pass either test."))
-  print(paste0("Following transformation via difference method and re-testing, the resulting dataframe included ", ee, " NAs and"))
-  print(paste0(ff, " non-null values."))
+  print(paste0(a, " data series passed ADF & KPSS tests. ", b + c, " partially passed the tests and require further transformation,"))
+  print(paste0("and ", d, " did not pass either test."))
+  print(paste0("Following transformation via difference method and re-testing, the resulting dataframe included ", e, " NAs and"))
+  print(paste0(f, " non-null values."))
   cat("\n")
-  print(paste0("The Granger Test was executed ", 30845 - gg, " times, and skipped (due to data series failing to meet requirements) ", gg, " times"))
-  print(paste0("Of the ", 30845 - gg, " Granger tests, ", hh, " (1.4%) were successful (p<0.05), as represented below by Order#."))
+  print(paste0("The Granger Test was executed ", 30845 - g, " times, and skipped (due to data series failing to meet requirements) ", g, " times"))
+  print(paste0("Of the ", 30845 - g, " Granger tests, ", h, " (1.4%) were successful (p<0.05), as represented below by Order#."))
 }
 
 summary_funct(Case_1_count,
