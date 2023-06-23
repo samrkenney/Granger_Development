@@ -1,4 +1,4 @@
 # Granger_Development
 # This project intends to address the question of whether changes in certain common indicators of economic development may predict information regarding certain other economic indicators over time.
 # World Bank time-series data were downloaded for every country in the world from 1980 to 2022 covering several common indicators of economic development, including: Gross National Income per Capita (PPP-adjusted); Manufacturing, value added (% of GDP); and GDP growth (%); among others.
-# This project is a personal effort of its author, Sam Kenney, to learn and practice the R coding language. All materials referenced in the creation of this R project file were open-source at the time of access. They include, but are limited to the websites: Stack Overflow, Geeks for Geeks, Statistics Globe, and YouTube. 
+# This project is a personal effort of its author, Sam Kenney, to learn and practice the R coding language. All materials referenced in the creation of this R project file were open-source at the time of access. They include, but are limited to, the websites: Stack Overflow, Geeks for Geeks, Statistics Globe, and YouTube. 
